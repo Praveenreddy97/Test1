@@ -1,0 +1,34 @@
+example one to write scripts for aktie sports 
+using SPSC.EcsEdsAdapter.BatchProcessor;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+
+
+namespace AktiesportProcessor
+{
+    public class AktiesportBatchProcessor : IRelationshipBatchProcessor
+    {
+        public IEnumerable<FileModel> Process(string tempWorkingDirectory, BatchModel batch)
+        {
+            string fileName = Path.GetFileName(batch.BatchTitle);
+            FileModel fileModel = new FileModel()
+            {
+                FilePath = Path.Combine(tempWorkingDirectory, fileName),
+            };
+            if (fileName.StartsWith("activity", true, CultureInfo.InvariantCulture))
+                fileModel.FileType = "Activity";
+            else if (fileName.StartsWith("location", true, CultureInfo.InvariantCulture))
+                fileModel.FileType = "Location";
+            else if (fileName.StartsWith("product", true, CultureInfo.InvariantCulture))
+                fileModel.FileType = "Item";
+
+            using (FileStream fileStream = File.Create(fileModel.FilePath))
+            {
+                fileStream.Write(batch.Content, 0, batch.Content.Length);
+            }
+
+            yield return fileModel;
+        }
+    }
+}
